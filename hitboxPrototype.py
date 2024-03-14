@@ -4,7 +4,7 @@ import pygame
 pygame.init()
 
 # Set up the screen
-width,height=1280,720
+width,height=800,600
 window=pygame.display.set_mode((width,height))
 pygame.display.set_caption("City Escape")
 
