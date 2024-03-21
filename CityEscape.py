@@ -37,7 +37,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         # load standing still image
-        self.image = pygame.transform.scale_by(player_img,sprite_scl) # load and scale player sprite image
+        self.image = pygame.transform.scale_by(player_img, sprite_scl) # load and scale player sprite image
         self.image.set_colorkey(WHITE) # set colorkey to remove black background for player's rect
         self.rect = self.image.get_rect()
         self.rect.center = (window.get_width() / 2, (window.get_height() / 2) + 100)
@@ -45,7 +45,7 @@ class Player(pygame.sprite.Sprite):
         print(self.rect)
         self.offset = 14
         r=self.rect
-        self.hitbox = pygame.Rect(r.x+r.w*0.33,r.y+r.h*0.14,r.w*0.34,r.w*0.68)
+        self.hitbox = pygame.Rect(r.x + r.w * 0.33, r.y + r.h * 0.14, r.w * 0.34, r.w * 0.68)
         self.hitbox.center = self.rect.center
         self.hitbox.centery += self.offset
         #pygame.draw.rect(self.image,RED,self.hitbox.copy().move(-self.rect.x,-self.rect.y),width=1)
@@ -87,15 +87,15 @@ class Mob(pygame.sprite.Sprite):
         # set pristine original image for sprite object - random choice from list
         self.image_original = random.choice(npc_imgs)
         self.image_original.set_colorkey(WHITE)  # set colour key for original image
-        self.image = pygame.transform.scale_by(self.image_original.copy(),sprite_scl) # set scaled copy image for sprite rendering
+        self.image = pygame.transform.scale_by(self.image_original.copy(), sprite_scl) # set scaled copy image for sprite rendering
         self.rect = self.image.get_rect() # specify bounding rect for sprite
         # set hitbox
         r = self.rect
         self.hitbox = (r.x+r.w*0.3,r.y+r.h*0.24,r.w*0.4,r.w*0.65)
         #pygame.draw.rect(self.image,RED,self.hitbox,width=1)
         # set random start position
-        self.rect.x = 0 # starting x-coordinate #random.randrange(window.get_width()-self.rect.width)
-        self.rect.y = 0 # starting y-coordinate #random.randrange(window.get_width()-self.rect.height)
+        self.rect.x = window.get_width() / 2 + 400 # starting x-coordinate #random.randrange(window.get_width()-self.rect.width)
+        self.rect.y = window.get_height() / 2 - 50 # starting y-coordinate #random.randrange(window.get_width()-self.rect.height)
         # set default speed
         self.speed_x = 0 #random.randrange(-3,3) # random speed along the x-axis
         self.speed_y = 0 #random.randrange(1,7) # random speed along the y-axis
@@ -139,7 +139,7 @@ player_img = pygame.image.load(os.path.join(img_dir, "mc.png")).convert()
 npc_imgs = []
 npc_list = ["mrRat.png", "msNymph.png"]
 for img in npc_list:
-    npc_imgs.append(pygame.image.load(os.path.join(img_dir,img)).convert())
+    npc_imgs.append(pygame.image.load(os.path.join(img_dir, img)).convert())
 
 # sprite groups - game, mob, projectiles...
 game_sprites = pygame.sprite.Group()
@@ -167,7 +167,7 @@ while running:
     now = pygame.time.get_ticks()
     key_state = pygame.key.get_pressed()
     # check keyboard events - keydown
-    if any(key_state) and now-last_input>input_delay:
+    if any(key_state) and now-last_input > input_delay:
         last_input = pygame.time.get_ticks()
         # stop and start the train moving animation
         if key_state[pygame.K_SPACE]:
@@ -178,7 +178,7 @@ while running:
         if key_state[pygame.K_s]:
             train_speed -= 1
     # move second background layer (if necessary)
-    if window.get_width()-bg_rect1.w < bg1_x and key_state[pygame.K_a]:
+    if window.get_width() - bg_rect1.w < bg1_x and key_state[pygame.K_a]:
         bg1_x -= player_speed
     if bg1_x < 0 and key_state[pygame.K_d]:
         bg1_x += player_speed
