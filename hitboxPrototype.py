@@ -28,7 +28,7 @@ snd_dir = os.path.join(assets_dir, "sounds") # relative path to music and sound 
 
 # initialise pygame settings and create game window
 pygame.init()
-window = pygame.display.set_mode((960, 640))
+window = pygame.display.set_mode((1280, 720)) #960 by 640 or 1280 by 720
 pygame.display.set_caption("City Escape")
 clock = pygame.time.Clock()
 
@@ -40,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.transform.scale_by(player_img,sprite_scl) # load and scale player sprite image
         self.image.set_colorkey(WHITE) # set colorkey to remove black background for player's rect
         self.rect = self.image.get_rect()
-        self.rect.center = (window.get_width() / 2, window.get_height() / 2)
+        self.rect.center = (window.get_width() / 2, (window.get_height() / 2) + 100)
         # set hitbox
         print(self.rect)
         self.offset = 14
