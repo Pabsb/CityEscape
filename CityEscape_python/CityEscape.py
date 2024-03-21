@@ -8,7 +8,7 @@ gravity=5
 player_speed=7
 player_jump_strength=35
 train_speed=10
-is_train_moving=False
+
 delay=200
 last_input=0
 sprite_scl=3
@@ -92,9 +92,7 @@ class Player(pygame.sprite.Sprite):
         if key_state[pygame.K_DOWN]:# or key_state[pygame.K_s]:
             self.speed_y=5
         """
-        if self.speed_x==0:
-            self.state=[3,0]
-        elif self.speed_x>0:
+        if self.speed_x>0 or key_state[pygame.K_d]:
             if self.state[0]<4:
                 self.state=[4,0]
             elif now-self.last_step>delay:
@@ -104,7 +102,7 @@ class Player(pygame.sprite.Sprite):
                 else:
                     self.state[0]-=1
                 self.state[1]+=1
-        elif self.speed_x<0:
+        elif self.speed_x<0 or key_state[pygame.K_a]:
             if self.state[0]>2:
                 self.state=[2,0]
             elif now-self.last_step>delay:
@@ -114,6 +112,8 @@ class Player(pygame.sprite.Sprite):
                 else:
                     self.state[0]-=1
                 self.state[1]+=1
+        elif self.speed_x==0:
+            self.state=[3,0]
         self.image=self.imgs[self.state[0]]
         self.hitbox.x+=self.speed_x
         self.hitbox.y+=self.speed_y
@@ -154,8 +154,8 @@ class Mob(pygame.sprite.Sprite):
         self.rect.center=(self.hitbox.centerx,self.rect.centery-self.offset)
         #pygame.draw.rect(self.image,RED,self.hitbox,width=1)
         # set random start position
-        self.rect.x=0 # starting x-coordinate #random.randrange(winWidth-self.rect.width)
-        self.rect.y=0 # starting y-coordinate #random.randrange(winWidth-self.rect.height)
+        #self.rect.x=0 # starting x-coordinate #random.randrange(winWidth-self.rect.width)
+        #self.rect.y=0 # starting y-coordinate #random.randrange(winWidth-self.rect.height)
         # set default speed
         self.speed_x=0 #random.randrange(-3,3) # random speed along the x-axis
         self.speed_y=0 #random.randrange(1,7) # random speed along the y-axis
@@ -163,30 +163,9 @@ class Mob(pygame.sprite.Sprite):
         # times of last mob events
         self.last_jump=0
         self.last_step=0
-    def update(self):
-        # move
-        if self.walking==0:
-            rand=random.randrange(0,sprite_activity)
-        else:
-            rand=random.randrange(0,sprite_activity//5)
-        now=pygame.time.get_ticks()
-        if self.hitbox.bottom<floor:
-            self.speed_y+=gravity
-        elif now-self.last_jump>2*delay and rand==1: # jump
-            self.speed_y=-player_jump_strength
-            self.last_jump=now
-        if rand<10: # attempt to change walking state
-            self.walking=rand%3-1 #(self.walking+2-(3*rand%2))%3-1
-        self.speed_x=self.walking*player_speed
-        if self.walking==0:
-            self.state=[2]
-        elif self.walking<0 and now-self.last_step>delay:
-            self.state[0]=(self.state[0]+1)%2
-        elif self.walking>0 and now-self.last_step>delay:
-            self.state[0]=self.state[0]%2+3
-        self.image=self.imgs[self.state[0]]
-        self.hitbox.x+=self.speed_x
-        self.hitbox.y+=self.speed_y
+    def move(self,dx,dy):
+        self.hitbox.x+=dx
+        self.hitbox.y+=dy
         if self.hitbox.right>winWidth:
             self.hitbox.right=winWidth
             self.walking=0
@@ -196,10 +175,41 @@ class Mob(pygame.sprite.Sprite):
         if self.hitbox.bottom>floor:
             self.hitbox.bottom=floor
             self.speed_y=0
-        if self.hitbox.top<0: # shouldn't be possible but just in case
+        if self.hitbox.top<0:  # shouldn't be possible but just in case
             self.hitbox.top=0
         self.rect.center=self.hitbox.center
         self.rect.centery-=self.offset
+    def update(self):
+        # determine motion
+        now=pygame.time.get_ticks()
+        # walking
+        if self.walking==0:
+            rand=random.randrange(0,sprite_activity)
+            if rand<10:
+                if rand%2==0:
+                    self.walking=-1
+                else:
+                    self.walking=1
+        else:
+            rand=random.randrange(0,sprite_activity//5)
+            if rand<10:
+                self.walking=0
+        if self.walking==0:
+            self.state=[2]
+        elif self.walking<0 and now-self.last_step>delay:
+            self.state[0]=(self.state[0]+1)%2
+        elif self.walking>0 and now-self.last_step>delay:
+            self.state[0]=self.state[0]%2+3
+        self.speed_x=self.walking*player_speed
+        # jumping
+        if self.hitbox.bottom<floor:
+            self.speed_y+=gravity
+        elif now-self.last_jump>2*delay and rand==1:
+            self.speed_y=-player_jump_strength
+            self.last_jump=now
+        # executing motion
+        self.image=self.imgs[self.state[0]]
+        self.move(self.speed_x,self.speed_y)
 
 
 # create a mob object
@@ -215,11 +225,13 @@ def gameExit():
 
 # load graphics/images for the game
 # background (2 layers)
+train_dir=0
+player_dir=0
 # background layer 1
-bg_img0=pygame.image.load(os.path.join(img_dir,"tunnel.png")).convert()
-bg_scl0=winHeight/bg_img0.get_rect().h
-bg_img0=pygame.transform.scale_by(bg_img0,bg_scl0)
-bg_rect0=bg_img0.get_rect() # add rect for bg - helps locate background
+bg0_img0=pygame.image.load(os.path.join(img_dir,"tunnel.png")).convert()
+bg_scl0=winHeight/bg0_img0.get_rect().h
+bg0_img0=pygame.transform.scale_by(bg0_img0,bg_scl0)
+bg_rect0=bg0_img0.get_rect() # add rect for bg - helps locate background
 #background layer 2
 bg_img1=pygame.image.load(os.path.join(img_dir,"train.png")).convert()
 bg_scl1=winHeight/bg_img1.get_rect().h
@@ -227,21 +239,18 @@ bg_img1=pygame.transform.scale_by(bg_img1,bg_scl1)
 bg_img1.set_colorkey(WHITE)
 bg_rect1=bg_img1.get_rect()
 # background offsets
-bg0_x=-(bg_rect0.w-winWidth)/2 # starting x offset of the first background layer
+bg0_x0=-(bg_rect0.w-winWidth)/2 # starting x offset of the first background layer
+bg0_x1=bg_rect0.w+bg0_x0
+bg0_img1=bg0_img0.copy()
 bg1_x=-(bg_rect1.w-winWidth)/2 # starting x offset of the second background layer
-# player
-#player_img=pygame.image.load(os.path.join(img_dir,"DP_still.png")).convert()
 
-# sprite groups - game, mob, projectiles...
+# sprite groups - player and mob
 game_sprites=pygame.sprite.Group()
 mob_sprites=pygame.sprite.Group()
-#createMob() # create a new npc object
 # npcs
-npc_list=["MrRat"]#"MsNymph"
-#npc_imgs=[]
-#for img in npc_list:
-#    npc_imgs.append(pygame.image.load(os.path.join(img_dir,img)).convert())
+npc_list=["MrRat"]#,"MsNymph"]
 createMob(random.choice(npc_list))
+# player
 player=Player() # create player object
 game_sprites.add(player) # add an npc to game
 
@@ -262,34 +271,72 @@ while running:
             if event.key==pygame.K_ESCAPE:
                 gameExit()
     now=pygame.time.get_ticks()
-    key_state = pygame.key.get_pressed()
+    key_state=pygame.key.get_pressed()
     # check keyboard events - keydown
     if any(key_state) and now-last_input>delay:
         last_input=pygame.time.get_ticks()
         # stop and start the train moving animation
         if key_state[pygame.K_SPACE]:
-            is_train_moving=not is_train_moving
-            print(bg0_x)
+            train_dir=(train_dir+2)%3-1
         if key_state[pygame.K_w]:
             train_speed+=1
         if key_state[pygame.K_s]:
             train_speed-=1
     # move second background layer (if necessary)
-    if winWidth-bg_rect1.w<bg1_x and key_state[pygame.K_a]:
-        bg1_x-=player_speed
-    if bg1_x<0 and key_state[pygame.K_d]:
-        bg1_x+=player_speed
+    # determine direction of motion and determine if it is allowed
+    if winWidth-bg_rect1.w<bg1_x and key_state[pygame.K_d]:
+        player_dir=-1
+    elif bg1_x<0 and key_state[pygame.K_a]:
+        player_dir=1
+    else:
+        player_dir=0
+    # move second background layer (if necessary)
+    if player_dir!=0:
+        bg1_x+=player_dir*player_speed
+        mob_list=pygame.sprite.Group.sprites(mob_sprites)
+        for mob in mob_list:
+            mob.move(player_dir*player_speed,0)
     # move first background layer
-    if is_train_moving:
-        if winWidth-bg_rect0.w<bg0_x<0: #bg0_x-winWidth>-bg_rect0.w
-            bg0_x-=train_speed
+    if train_dir!=0:
+        """
+        if train_dir==1:
+            if winWidth-bg_rect0.w<bg0_x0: #bg0_x-winWidth>-bg_rect0.w
+                bg0_x0-=train_speed
+                bg0_x1-=train_speed
+            else:
+                bg0_x1=bg0_x0
+                bg0_x0+=train_dir*bg_rect0.w
         else:
-            bg0_x=(winWidth-bg_rect0.w)/2
+            if winWidth-bg_rect0.w<bg0_x0: #bg0_x-winWidth>-bg_rect0.w
+                bg0_x0+=train_speed
+                bg0_x1+=train_speed
+            else:
+                bg0_x1=bg0_x0
+                bg0_x0-=bg_rect0.w
+        #"""
+        if winWidth-bg_rect0.w<bg0_x0: #bg0_x-winWidth>-bg_rect0.w
+            bg0_x0-=train_dir*train_speed
+            bg0_x1-=train_dir*train_speed
+            #(winWidth,bg_rect0.w,bg0_x0)
+        else:
+            print(bg0_x1,bg0_x0)
+            bg0_x1=bg0_x0
+            bg0_x0+=bg_rect0.w
+            print(bg0_x1,bg0_x0)
+        """
+        if winWidth-bg_rect0.w<bg0_x0<0: #bg0_x-winWidth>-bg_rect0.w
+            bg0_x0-=train_speed
+        else:
+            bg0_x0=(winWidth-bg_rect0.w)/2
+        #"""
     # 'updating' the game
     game_sprites.update() # update all game sprites
     # draw background layers
-    window.blit(bg_img0,(bg0_x,0)) # layer 1
+    window.blit(bg0_img0,(bg0_x0,0)) # layer 1
+    #"""
+    #if 0<bg0_x0 or 0<bg0_x0:
+    window.blit(bg0_img1,(bg0_x1,0))  # layer 1
+    #"""
     window.blit(bg_img1,(bg1_x,0)) # layer 2
     game_sprites.draw(window) # draw all sprites to the game window
     pygame.display.update() # update the display window...
-# floor=572
