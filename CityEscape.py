@@ -182,6 +182,13 @@ def gameExit():
     pygame.quit()
     sys.exit()
 
+def textRender(surface, text, size, color, x, y):
+    font = pygame.font.Font('freesansbold.ttf', size)
+    text = font.render(text, True, color)
+    textRect = text.get_rect()
+    textRect.center = x, y
+    surface.blit(text, textRect)
+
 train_dir = 0
 player_dir = 0
 bg0_img0 = pygame.image.load(os.path.join(img_dir,"tunnel.png")).convert()
@@ -204,6 +211,8 @@ npc_list = ["MrRat", "MsNymph"]
 createMob(random.choice(npc_list))
 player = Player()
 game_sprites.add(player)
+
+test_text = "Hello there!"
 
 running = True
 while running:
@@ -268,4 +277,13 @@ while running:
     window.blit(bg0_img1, (bg0_x1, 0))
     window.blit(bg_img1, (bg1_x, 0))
     game_sprites.draw(window)
+
+    winX = window.get_width() / 2
+    winY = window.get_height() - 50
+    textRender(window, str(test_text), 32, BLACK, winX - 2, winY + 2)
+    textRender(window, str(test_text), 32, BLACK, winX - 2, winY - 2)
+    textRender(window, str(test_text), 32, BLACK, winX + 2, winY + 2)
+    textRender(window, str(test_text), 32, BLACK, winX + 2, winY - 2)
+    textRender(window, str(test_text), 32, WHITE, winX, winY)
+
     pygame.display.update()
