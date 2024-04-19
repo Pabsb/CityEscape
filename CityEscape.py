@@ -7,15 +7,16 @@ def to_do_list():
     s="""
     Problems:
     - ADD COMMENTS!!!!                                                                     don't wanna :(
-    - mobs arent bound to the edge of the train cars                                       not fixed anymore :(
+    - mobs arent bound to the edge of the train cars                                       fixed
     - separate inputs for the different types of player movement                           fixed
-    - train car goes a bit too far when the player walks all the way to the edge           attempted, failed, not going to worry about it yet
-    - re-add player's ability to jump (removed it at some point)                           not started, likely wont be hard, not important
+    - train car goes a bit too far when the player walks all the way to the edge           attempted, likely a problem with the train image asset (try cropping)
+    - re-add player's ability to jump (removed it at some point)                           fixed
     potential optimizations/cleaning:
     - (medium/low priority) turn the background into a class (maybe?)                      not started, not going to worry about it yet
     - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
     additions:
     - (***MAXIMUM PRIORITY***)give the player a sanity meter                               in progress, likely wont be hard
+    - (high priority) dialog for characters                                                being writen, not implemented
     - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
       - (low priority) string several of the same train car image                          not started, not going to worry about it yet
       - (low priority) make a conductor car                                      
@@ -119,7 +120,6 @@ class Player(pygame.sprite.Sprite):
         # times of last player events
         self.last_step=0
         self.last_jump=0
-        self.jump=0
     # update per loop iteration
     def update(self):
         # gravity
@@ -164,8 +164,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.center=self.hitbox.center
         self.rect.centery-=self.offset
 
-
-
 # create a generic enemy sprite for the game - standard name is *mob*
 class Mob(pygame.sprite.Sprite):
     def __init__(self,tag):
@@ -200,15 +198,18 @@ class Mob(pygame.sprite.Sprite):
         # times of last mob events
         self.last_jump=0
         self.last_step=0
+        # horazontal bounds
+        self.xbound_lower=-r.w
+        self.xbound_higher=winWidth+r.w
     def move(self,dx,dy):
         self.hitbox.x+=dx
         self.hitbox.y+=dy
-        #if self.hitbox.right>:#winWidth:
-        #    self.hitbox.right=winWidth
-        #    self.walking=0
-        #if self.hitbox.left<0:
-        #    self.hitbox.left=0
-        #    self.walking=0
+        if self.hitbox.right>self.xbound_higher:
+            self.hitbox.right=self.xbound_higher
+            self.walking=0
+        if self.hitbox.left<self.xbound_lower:
+            self.hitbox.left=self.xbound_lower
+            self.walking=0
         if self.hitbox.bottom>floor:
             self.hitbox.bottom=floor
             self.speed_y=0
@@ -216,6 +217,9 @@ class Mob(pygame.sprite.Sprite):
             self.hitbox.top=0
         self.rect.center=self.hitbox.center
         self.rect.centery-=self.offset
+    def rebound(self,bg_x,bg_rect): #not the basketball kind :)
+        self.xbound_lower=bg_x
+        self.xbound_higher=bg_x+bg_rect.w
     def update(self):
         # determine motion
         now=pygame.time.get_ticks()
@@ -333,18 +337,17 @@ while running:
             if key_state[pygame.K_w] and train_speed==0: # change train direction (only works if the train is stopped)
                 #if previous_key_state is not None and previous_key_state[pygame.K_w]: # only executes one each time the key is pressed
                 train_dir*=-1
-
+    # player walk input
     if key_state[pygame.K_d]:
         player_dir=-1
     elif key_state[pygame.K_a]:
         player_dir=1
     else:
         player_dir=0
-    """
+    # player jump input
     if key_state[pygame.K_s] and now-player.last_jump>2*delay:
-        player_speed_y=-player_jump_strength
+        player.speed_y=-player_jump_strength
         player.last_jump=now
-    """
 # move first background layer
     # confine train speed between zero an the speed limit
     if train_speed<0: # confines train to a non-negative speed
@@ -376,13 +379,13 @@ while running:
             if winWidth-bg_rect1.w>bg1_x:
                 bg1_x=winWidth-bg_rect1.w
                 walk_mode=1
+            # reflect relative motion of the mobs (so they appear stationary)
             mob_list=pygame.sprite.Group.sprites(mob_sprites)
             for mob in mob_list:
-                mob.move(player_dir*player_speed,0)
+                mob.rebound(bg1_x,bg_rect1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
+                mob.move(player_dir*player_speed,0) # move the mob they stay stationary relative to the train
         if walk_mode==1:
             player_speed_x=player_dir*player_speed
-
-    #"""
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
