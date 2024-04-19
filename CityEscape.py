@@ -6,31 +6,48 @@ import pygame.event as EVENTS
 def to_do_list():
     s="""
     Problems:
-    - ADD COMMENTS!!!!
-    - mobs arent bound to the edge of the train cars                                       (fixed)
-    - separate inputs for the different types of player movement                           (fixed)
-    - train car goes a bit too far when the player walks all the way to the edge           (attempted) 
+    - ADD COMMENTS!!!!                                                                     don't wanna :(
+    - mobs arent bound to the edge of the train cars                                       not fixed anymore :(
+    - separate inputs for the different types of player movement                           fixed
+    - train car goes a bit too far when the player walks all the way to the edge           attempted, failed, not going to worry about it yet
+    - re-add player's ability to jump (removed it at some point)                           not started, likely wont be hard, not important
     potential optimizations/cleaning:
-    - (medium/low priority) turn the background into a class (maybe?)                      (not started)
+    - (medium/low priority) turn the background into a class (maybe?)                      not started, not going to worry about it yet
+    - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
     additions:
-    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               (not started)  ***
-    - (low priority) make the train multiple cars long                                     (not started)
-      - (low priority) string several of the same train car image                          (not started)
+    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               in progress, likely wont be hard
+    - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
+      - (low priority) string several of the same train car image                          not started, not going to worry about it yet
       - (low priority) make a conductor car                                      
-    - train station
-      - should operate similar to the train car                                            (not started)
-          - the exterior train car image replace the interior train car image              (not made)
-          - the sky replaces the train tunnel image                                        ()
-            - separate images depending on weather and day/night cycles (low priority)
-            - sun object (low priority)
-    - overworld 
-        - should operate similar to the train car
-          - the buildings replace the train car image
-          - the sky replaces the train tunnel image
-    - combat system
-      - player vs mob?
-    NOTE:
-    - removed players ability to jump at some point and need to re-add it
+    - train station                                                                        images made, code repurposable
+      - should operate similar to the train car                                            still trying to sort out how this works?
+          - the exterior train car image replace layer 2 (interior train car image)        image made
+          - platform floor as front layer                                                  image made
+          - platform tunnel image as third (furthest back) layer (anchor to front layer)   image made 
+          - move player anchor to layer 3                                                  might be wrong
+    - overworld (should operate similar to the train car)                                  not started
+      - the buildings replace the train car image                                          not started, no image
+      - the sky replaces the train tunnel image                                            not started, no image
+        - separate images depending on weather and day/night cycles (low priority)         not started, not gonna worry about it
+        - sun object (low priority)                                                        not started, not gonna worry about it
+    - interaction (doors/triggers)                                                         not started
+      - doors in buildings                                                                 not started
+        - trigger minigame                                                                 first minigame made (can stand in for all future ones)
+      - train doors at station                                                             not started
+        - enter and exit station mode                                                      not started
+    - combat system (modeled of pokemon battles)                                           basic concept decided
+      - player vs mob, anchored in place                                                   not started
+      - buttons for input                                                                  not started
+        - button class                                                                     not started
+      - button functionality                                                               not started
+        - primary attack                                                                   not started
+        - secondary attack (charged by using primary attack)                               not started
+        - shield                                                                           not started
+        - flee                                                                             not started
+      - automate mob combat                                                                not started
+        - consistent attack interval                                                       not started
+          - if secondary attack is charged, chance for next attack to be charged           not started 
+        - if player uses secondary attack, chance of shield                                not started
     """
     print(s)
     return
@@ -276,7 +293,7 @@ bg1_x=-(bg_rect1.w-winWidth)//2 # starting x offset of the second background lay
 game_sprites=pygame.sprite.Group()
 mob_sprites=pygame.sprite.Group()
 # npcs
-npc_list=["MrRat","MsCat","MsNymph","Chad","Kathy","Chicago","MrShrimp"]
+npc_list=["MrRat","MsCat","MsNymph","Chad","Kathy","Chicago","MrShrimp","Conductor","TrainCrazy"]
 createMob(random.choice(npc_list))
 # player
 player=Player() # create player object
