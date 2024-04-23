@@ -13,7 +13,7 @@ def to_do_list():
     - (medium/low priority) turn the background into a class (maybe?)                      not started, not going to worry about it yet
     - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
     additions:
-    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               in progress, likely wont be hard
+    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               Health Bar / Sanity Meter is added
     - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
       - (low priority) string several of the same train car image                          not started, not going to worry about it yet
       - (low priority) make a conductor car                                      
@@ -67,9 +67,13 @@ FPS = 60
 
 # variables for commonly used colours
 BLACK = (0, 0, 0)
+BLUE = (0, 0, 255)
+CYAN = (0, 255, 255)
+GREEN = (0, 255, 0)
+MAGENTA = (255, 0, 255)
+RED = (255, 0, 0)
 WHITE = (255, 255, 255)
-BLUE = (0, 191, 0)
-RED = (191, 0, 0)
+YELLOW = (255, 255, 0)
 
 # game assets
 game_dir = os.path.dirname(__file__)
@@ -117,6 +121,7 @@ class Player(pygame.sprite.Sprite):
         self.last_step = 0
         self.last_jump = 0
         self.jump = 0
+
     # update per loop iteration
     def update(self):
         # gravity
@@ -170,7 +175,7 @@ class Mob(pygame.sprite.Sprite):
         self.imgs = [pygame.transform.scale_by(img, sprite_scl)]
         for i in range(2):
             img = pygame.image.load(os.path.join(img_dir, '{}_walk_left{}.png'.format(tag, i))).convert()
-            self.imgs.insert(0,pygame.transform.scale_by(img,sprite_scl))
+            self.imgs.insert(0, pygame.transform.scale_by(img, sprite_scl))
             img = pygame.image.load(os.path.join(img_dir, '{}_walk_right{}.png'.format(tag, i))).convert()
             self.imgs.append(pygame.transform.scale_by(img, sprite_scl))
         for img in self.imgs:
@@ -191,7 +196,8 @@ class Mob(pygame.sprite.Sprite):
         # times of last mob events
         self.last_jump = 0
         self.last_step = 0
-    def move(self,dx,dy):
+
+    def move(self, dx, dy):
         self.hitbox.x += dx
         self.hitbox.y += dy
         if self.hitbox.bottom > floor:
@@ -201,6 +207,7 @@ class Mob(pygame.sprite.Sprite):
             self.hitbox.top = 0
         self.rect.center = self.hitbox.center
         self.rect.centery -= self.offset
+
     def update(self):
         # determine motion
         now = pygame.time.get_ticks()
@@ -251,6 +258,25 @@ def textRender(surface, text, size, color, x, y):
     textRect.center = x, y
     surface.blit(text, textRect)
 
+def drawStatusBar(surface, x, y, health_pct):
+    # defaults for status bar dimension
+    BAR_WIDTH = 100
+    BAR_HEIGHT = 20
+    # check health does not fall below 0 - just in case...
+    if health_pct < 0:
+        health_pct = 0
+    # use health as percentage to calculate fill for status bar
+    bar_fill = (health_pct / 100) * BAR_WIDTH
+    # rectangles - outline of status bar &
+    bar_rect = pygame.Rect(x, y, BAR_WIDTH, BAR_HEIGHT)
+    fill_rect = pygame.Rect(x, y, bar_fill, BAR_HEIGHT)
+    # draw health status bar to the game window - 3 specifies pixels for border width
+    if bar_fill < 40:
+        pygame.draw.rect(surface, RED, fill_rect)
+    else:
+        pygame.draw.rect(surface, GREEN, fill_rect)
+    pygame.draw.rect(surface, WHITE, bar_rect, 3)
+
 # load graphics/images for the game
 # background (2 layers)
 train_speed, train_dir= 0, 1
@@ -278,7 +304,7 @@ bg1_x = -(bg_rect1.w - winWidth) // 2 # starting x offset of the second backgrou
 game_sprites = pygame.sprite.Group()
 mob_sprites = pygame.sprite.Group()
 # npcs
-npc_list = ["MrRat", "MsCat", "MsNymph", "Chad", "Kathy", "Chicago", "MrShrimp", "Conductor"] #, "TrainCrazy"]
+npc_list = ["MrRat", "MsCat", "MsNymph", "Chad", "Kathy", "Chicago", "MrShrimp"] #, "Conductor", "TrainCrazy"]
 createMob(random.choice(npc_list))
 # player
 player = Player() # create player object
@@ -286,6 +312,7 @@ game_sprites.add(player) # add an npc to game
 key_state = None
 
 test_text = "Hello there!"
+playerHealth = 100
 
 running = True
 # create game loop
@@ -378,5 +405,7 @@ while running:
     textRender(window,str(test_text),32,BLACK,winX+2,winY+2)
     textRender(window,str(test_text),32,BLACK,winX+2,winY-2)
     textRender(window,str(test_text),32,WHITE,winX,winY)
+
+    drawStatusBar(window, 10, 10, playerHealth)
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
