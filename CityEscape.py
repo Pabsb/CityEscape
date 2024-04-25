@@ -372,7 +372,7 @@ while running:
     else:
         player_dir = 0
     # player jump input
-    if key_state[pygame.K_SPACE] and now - player.last_jump > 2 * delay:
+    if (key_state[pygame.K_SPACE] or key_state[pygame.K_w] )and now - player.last_jump > 2 * delay:
         player.speed_y = -player_jump_strength
         player.last_jump = now
 # move first background layer
