@@ -428,14 +428,13 @@ while running:
                 mob.move(player_dir * player_speed, 0) # move the mob they stay stationary relative to the train
         if walk_mode == 1:
             player_speed_x = player_dir * player_speed
-    '''
-        if(key_state[pygame.K_p]) and ispaused is False:
-            mixer.music.pause()
-            inpaused = True
-        else:
-            mixer.music.unpause()
-            ispaused = False
-    '''
+    #Sound playback controls
+    if(key_state[pygame.K_p]) and ispaused is False:
+        mixer.music.pause()
+        ispaused = True
+    if(key_state[pygame.K_o]) and ispaused is True:
+        mixer.music.unpause()
+        ispaused = False    
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
