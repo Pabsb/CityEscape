@@ -11,12 +11,12 @@ def to_do_list():
     - separate inputs for the different types of player movement                           fixed
     - train car goes a bit too far when the player walks all the way to the edge           attempted, likely a problem with the train image asset (try cropping)
     - re-add player's ability to jump (removed it at some point)                           fixed
-    - text wraping doesn't work                                                            not started
+    - text wraping doesn't work                                                            attempted, failed
     potential optimizations/cleaning:
-    - (medium/low priority) turn the background into a class (maybe?)                      not started, not going to worry about it yet
-    - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
+    - (medium/low priority) turn the background into a class (maybe?)                      done
+    - (medium/low priority) turn text boxes into a class (make it more general use)        not started
     additions:
-    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               Health Bar / Sanity Meter is added
+    - (***MAXIMUM PRIORITY***)give the player a sanity meter                               Health Bar / Sanity Meter added, not functional
     - (high priority) add mob spawn mechanics                                              basic functionality, still need to control duplicate spawns
     - (high priority) dialog for characters                                                added, doesnt wrap as intended 
     - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
@@ -34,10 +34,10 @@ def to_do_list():
         - separate images depending on weather and day/night cycles (low priority)         not started, not gonna worry about it
         - sun object (low priority)                                                        not started, not gonna worry about it
     - interaction (doors/triggers)                                                         not started
-      - doors in buildings                                                                 not started
-        - trigger minigame                                                                 first minigame made (can stand in for all future ones)
+      - doors in buildings                                                                 done, super basic, needs improvement
+        - trigger minigame                                                                 first minigame made (can stand in for all future ones), not added
       - train doors at station                                                             not started
-        - enter and exit station mode                                                      not started
+        - enter and exit station mode                                                      done, needs polishing
     - combat system (modeled of pokemon battles)                                           basic concept decided
       - player vs mob, anchored in place                                                   not started
       - buttons for input                                                                  not started
@@ -66,6 +66,7 @@ last_input = 0
 sprite_scl = 3
 floor = 572
 sprite_activity = 1000
+npc_cap=7;
 
 # variables for pygame window - space invaders vertical screen style
 FPS = 60
@@ -220,9 +221,9 @@ class Mob(pygame.sprite.Sprite):
             self.hitbox.top=0
         self.rect.center=self.hitbox.center
         self.rect.centery-=self.offset
-    def rebound(self,bg_x,bg_rect): #not the basketball kind :)
-        self.xbound_lower=bg_x
-        self.xbound_higher=bg_x+bg_rect.w
+    def rebound(self,bg): #not the basketball kind :)
+        self.xbound_lower=bg.x
+        self.xbound_higher=bg.x+bg.w
     def update(self):
         # determine motion
         now = pygame.time.get_ticks()
@@ -256,14 +257,18 @@ class Mob(pygame.sprite.Sprite):
         self.move(self.speed_x, self.speed_y)
 
 class Background:
-    def __init__(self,name,color):
+    def __init__(self,name,color,shift):
         self.tag=name
-        self.img=pygame.image.load(os.path.join(img_dir, "{}.png".format(name))).convert()
-        scl=winHeight/self.img.get_rect().h
-        self.img=pygame.transform.scale_by(self.img,scl)
-        if color!=None:
-            self.img.set_colorkey(WHITE)
-        self.rect=self.img.get_rect()
+        if name!=None:
+          self.img=pygame.image.load(os.path.join(img_dir, "{}.png".format(name))).convert()
+          scl=winHeight/self.img.get_rect().h
+          self.img=pygame.transform.scale_by(self.img,scl)
+          self.rect=self.img.get_rect()
+          self.x=self.rect.x
+          self.w=self.rect.w
+          if color!=None:
+            self.img.set_colorkey(color)
+
 
 # create a mob object
 def createMob(name,quote):
@@ -313,38 +318,31 @@ def drawStatusBar(surface, x, y, health_pct):
         pygame.draw.rect(surface, GREEN, fill_rect)
     pygame.draw.rect(surface, WHITE, bar_rect, 3)
 
-
-
-
 # load graphics/images for the game
 # background (2 layers)
 train_speed, train_dir= 0, 1
 player_dir = 0
 walk_mode = 0
 # background layer 1
-bg0_img0 = pygame.image.load(os.path.join(img_dir, "tunnel.png")).convert()
-bg_scl0 = winHeight / bg0_img0.get_rect().h
-bg0_img0 = pygame.transform.scale_by(bg0_img0, bg_scl0)
-bg_rect0 = bg0_img0.get_rect() # add rect for bg - helps locate background
-# background layer 1 offsets
-bg0_x0 = -(bg_rect0.w - winWidth) / 2 # starting x offset of the first background layer
-bg0_x1 = bg_rect0.w + bg0_x0
-bg0_img1 = bg0_img0.copy()
-#background layer 2
-bg_img1 = pygame.image.load(os.path.join(img_dir, "train.png")).convert()
-bg_scl1 = winHeight / bg_img1.get_rect().h
-bg_img1 = pygame.transform.scale_by(bg_img1, bg_scl1)
-bg_img1.set_colorkey(WHITE)
-bg_rect1 = bg_img1.get_rect()
-# background layer 2 offsets
-bg1_x = -(bg_rect1.w - winWidth) // 2 # starting x offset of the second background layer
+tunnel1=Background("tunnel",None,0)
+tunnel2=Background("tunnel",None,tunnel1.w) # make a copy method
+# background layer 2
+platform=Background("platform",WHITE,0) # platform
+# background layer 3
+train_interior=Background("train",WHITE,0) # train
+# background layer 2
+train_exterior=Background("platform",WHITE,0) # platform
 
+bg0a=tunnel1
+bg0b=tunnel2
+bg1=train_interior
+
+you_are_here=0
 
 # sprite groups - player and mob
 game_sprites = pygame.sprite.Group()
 mob_sprites = pygame.sprite.Group()
 # npcs
-npc_cap=1;
 npc_handle=[["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
            [1,1,2,2,3,3,4,4,5], # spawn weights
            #[0,0,0,0,0,0,0,0,0],
@@ -368,7 +366,6 @@ player = Player() # create player object
 game_sprites.add(player) # add an npc to game
 key_state = None
 
-test_text = "Hello there!"
 playerHealth = 100
 
 running = True
@@ -382,11 +379,7 @@ while running:
         if event.type == pygame.QUIT:
             gameExit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            #print(pygame.mouse.get_pos())
-            mob_list = pygame.sprite.Group.sprites(mob_sprites)
-            for mob in mob_list:
-                mob.dist(player)
-            print("\n")
+            print(pygame.mouse.get_pos())
         if event.type == pygame.KEYDOWN:
             # check for ESCAPE key
             if event.key == pygame.K_ESCAPE:
@@ -406,6 +399,10 @@ while running:
             if key_state[pygame.K_w] and train_speed==0: # change train direction (only works if the train is stopped)
                 #if previous_key_state is not None and previous_key_state[pygame.K_w]: # only executes one each time the key is pressed
                 train_dir*=-1
+            if key_state[pygame.K_f] and train_speed==0: # exit the train; enter the station
+                you_are_here=1
+                bg1=platform
+                
     # player walk input
     if key_state[pygame.K_d]:
         player_dir =- 1
@@ -424,15 +421,15 @@ while running:
     if train_speed > max_train_speed: # confines train to a speed limit
        train_speed = max_train_speed
     # reposition background layer 1 image positions if required to cover the game window (two image leap frog thing)
-    if (train_dir == 1 and winWidth - bg_rect0.w >= bg0_x0) or (train_dir == -1 and bg0_x0 >= 0):
-        bg0_x1 = bg0_x0
-        bg0_x0 += train_dir * bg_rect0.w
+    if (train_dir == 1 and winWidth - bg0a.w >= bg0a.x) or (train_dir == -1 and bg0a.x >= 0):
+        bg0b.x = bg0a.x
+        bg0a.x += train_dir * bg0a.w
     # shift the background layer 1 images to simulate/show relative motion
-    bg0_x0 -= train_dir * train_speed
-    bg0_x1 -= train_dir * train_speed
+    bg0a.x -= train_dir * train_speed
+    bg0b.x -= train_dir * train_speed
 # move second background layer (if necessary)
     # which animation mode
-    if (winWidth - bg_rect1.w < bg1_x and player.rect.centerx >= winWidth / 2) or (bg1_x < 0 and player.rect.centerx <= winWidth / 2):
+    if (winWidth - bg0a.w < bg1.x and player.rect.centerx >= winWidth / 2) or (bg1.x < 0 and player.rect.centerx <= winWidth / 2):
         walk_mode = 0
     else:
         walk_mode = 1
@@ -440,18 +437,18 @@ while running:
     if player_dir != 0:
         if walk_mode == 0:
             player_speed_x = 0
-            bg1_x += player_dir * player_speed
+            bg1.x += player_dir * player_speed
             # prevent the train far from going to far
-            if bg1_x>0:
-                bg1_x=0
+            if bg1.x>0:
+                bg1.x=0
                 walk_mode=1
-            if winWidth-bg_rect1.w>bg1_x:
-                bg1_x=winWidth-bg_rect1.w
+            if winWidth-bg1.w>bg1.x:
+                bg1.x=winWidth-bg1.w
                 walk_mode=1
             # reflect relative motion of the mobs (so they appear stationary)
             mob_list=pygame.sprite.Group.sprites(mob_sprites)
             for mob in mob_list:
-                mob.rebound(bg1_x,bg_rect1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
+                mob.rebound(bg1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
                 mob.move(player_dir*player_speed,0) # move the mob they stay stationary relative to the train
         if walk_mode==1:
             player_speed_x=player_dir*player_speed
@@ -459,9 +456,9 @@ while running:
     # update all game sprites
     game_sprites.update()
     # draw background layers
-    window.blit(bg0_img0, (bg0_x0, 0)) # layer 1
-    window.blit(bg0_img1, (bg0_x1, 0)) # layer 1 (used to make the background mobile)
-    window.blit(bg_img1, (bg1_x, 0)) # layer 2
+    window.blit(bg0a.img, (bg0a.x, 0)) # layer 1
+    window.blit(bg0b.img, (bg0b.x, 0)) # layer 1 (used to make the background mobile)
+    window.blit(bg1.img, (bg1.x, 0)) # layer 2
     # drawing the game sprites
     game_sprites.draw(window) # draw all sprites to the game window
 # draw text
@@ -469,20 +466,8 @@ while running:
     closest=mob_list[0]
     how_close=player.rect.x-closest.rect.x
     for mob in mob_list:
-        attempt=player.rect.x-mob.rect.x
-        if attempt<how_close:
-            closest=mob
-            how_close=attempt
-    textRender(window,closest.quote,32, WHITE,closest.hitbox.centerx,closest.hitbox.bottom+16)
-    '''
-    winX = window.get_width() / 2
-    winY = window.get_height() - 50
-    textRender(window,str(test_text),32,BLACK,winX-2,winY+2)
-    textRender(window,str(test_text),32,BLACK,winX-2,winY-2)
-    textRender(window,str(test_text),32,BLACK,winX+2,winY+2)
-    textRender(window,str(test_text),32,BLACK,winX+2,winY-2)
-    textRender(window,str(test_text),32,WHITE,winX,winY)
-    '''
+      textRender(window,closest.quote,32, WHITE,closest.hitbox.centerx,closest.hitbox.bottom+16)
+#draw the status bar
     drawStatusBar(window, 10, 10, playerHealth)
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
