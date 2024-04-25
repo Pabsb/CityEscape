@@ -2,6 +2,8 @@
 import pygame, random, sys, os
 # import event
 import pygame.event as EVENTS
+# import numpy for math stuff
+import numpy as np
 
 def to_do_list():
     s="""
@@ -16,6 +18,7 @@ def to_do_list():
     - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
     additions:
     - (***MAXIMUM PRIORITY***)give the player a sanity meter                               in progress, likely wont be hard
+    - (high priority) add mob spawn mechanics                                              not started, likely wont be hard
     - (high priority) dialog for characters                                                being writen, not implemented
     - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
       - (low priority) string several of the same train car image                          not started, not going to worry about it yet
@@ -178,6 +181,7 @@ class Mob(pygame.sprite.Sprite):
             self.imgs.append(pygame.transform.scale_by(img,sprite_scl))
         for img in self.imgs:
             img.set_colorkey(WHITE)
+        self.tag=tag
         self.state=[2]
         self.image=self.imgs[self.state[0]]
         self.rect=self.image.get_rect() # specify bounding rect for sprite
@@ -255,8 +259,8 @@ class Mob(pygame.sprite.Sprite):
 # create a mob object
 def createMob(tag):
     mob=Mob(tag)
-    game_sprites.add(mob) # add to game_sprites group to get object updated
-    mob_sprites.add(mob) # add to mob_sprites group - use for collision detection &c.
+    game_sprites.add(mob)  # add to game_sprites group to get object updated
+    mob_sprites.add(mob)  # add to mob_sprites group - use for collision detection &c.
 
 # define game quit and program exit
 def gameExit():
@@ -269,6 +273,8 @@ def textRender(surface, text, size, color, x, y):
     textRect=text.get_rect()
     textRect.center=x,y
     surface.blit(text,textRect)
+
+
 
 # load graphics/images for the game
 # background (2 layers)
@@ -297,8 +303,23 @@ bg1_x=-(bg_rect1.w-winWidth)//2 # starting x offset of the second background lay
 game_sprites=pygame.sprite.Group()
 mob_sprites=pygame.sprite.Group()
 # npcs
-npc_list=["MrRat","MsCat","MsNymph","Chad","Kathy","Chicago","MrShrimp","Conductor","TrainCrazy"]
-createMob(random.choice(npc_list))
+#npc_list=[["Chicago",1,0],
+#          ["Conductor",1,0],
+#          ["MrRat",2,0],
+#          ["MsCat",2,0],
+#          ["MsNymph",3,0],
+#          ["MrShrimp",3,0],
+#          ["Chad",4,0],
+#          ["Kathy",4,0],
+#          ["TrainCrazy",5,0]
+#         ]
+npc_cap=7;
+npc_list=[["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
+          [1,1,2,2,3,3,4,4,5], # spawn weights
+         ]
+for spawn in random.choices(npc_list[0], weights=npc_list[1], k=npc_cap):
+    createMob(spawn)
+
 # player
 player=Player() # create player object
 game_sprites.add(player) # add an npc to game
