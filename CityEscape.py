@@ -333,6 +333,7 @@ for spawn in random.choices(npc_list[0], weights = npc_list[1], k = npc_cap):
 
 sounds_list = ["acid_rain.wav", "echoes_in_eternitye.wav"]
 
+#Adds sound
 mixer.init() 
 pygame.mixer.music.load(os.path.join(snd_dir, "acid_rain.wav"))
 mixer.music.set_volume(0.6)
@@ -427,14 +428,14 @@ while running:
                 mob.move(player_dir * player_speed, 0) # move the mob they stay stationary relative to the train
         if walk_mode == 1:
             player_speed_x = player_dir * player_speed
-'''
+    '''
         if(key_state[pygame.K_p]) and ispaused is False:
             mixer.music.pause()
             inpaused = True
         else:
             mixer.music.unpause()
             ispaused = False
-'''
+    '''
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
@@ -454,8 +455,6 @@ while running:
     textRender(window, str(test_text), 32, WHITE, winX, winY)
 
     drawStatusBar(window, 10, 10, playerHealth)
-
-    
 
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
