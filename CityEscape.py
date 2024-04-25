@@ -1,5 +1,7 @@
 import pygame, random, sys, os
 import pygame.event as EVENTS
+#sound import
+from pygame import mixer
 # import numpy for math stuff
 import numpy as np
 
@@ -331,6 +333,12 @@ for spawn in random.choices(npc_list[0], weights = npc_list[1], k = npc_cap):
 
 sounds_list = ["acid_rain.wav", "echoes_in_eternitye.wav"]
 
+mixer.init() 
+pygame.mixer.music.load(os.path.join(snd_dir, "acid_rain.wav"))
+mixer.music.set_volume(0.6)
+pygame.mixer.music.play(-1)
+ispaused = False
+
 # player
 player = Player() # create player object
 game_sprites.add(player) # add an npc to game
@@ -361,7 +369,7 @@ while running:
     # check keyboard events - keydown
     if any(key_state):
         # controls for the train moving animation
-        if now-last_input > delay:
+        if now - last_input > delay:
             last_input = pygame.time.get_ticks()
             if key_state[pygame.K_e]: # accelerate train
                 train_speed += train_acceleration
@@ -419,6 +427,14 @@ while running:
                 mob.move(player_dir * player_speed, 0) # move the mob they stay stationary relative to the train
         if walk_mode == 1:
             player_speed_x = player_dir * player_speed
+'''
+        if(key_state[pygame.K_p]) and ispaused is False:
+            mixer.music.pause()
+            inpaused = True
+        else:
+            mixer.music.unpause()
+            ispaused = False
+'''
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
@@ -439,8 +455,7 @@ while running:
 
     drawStatusBar(window, 10, 10, playerHealth)
 
-    pygame.mixer.music.load(os.path.join(snd_dir, "acid_rain.wav"))
-    pygame.mixer.music.play(-1)
+    
 
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
