@@ -290,8 +290,6 @@ def drawStatusBar(surface, x, y, health_pct):
         pygame.draw.rect(surface, GREEN, fill_rect)
     pygame.draw.rect(surface, WHITE, bar_rect, 3)
 
-
-
 # load graphics/images for the game
 # background (2 layers)
 train_speed, train_dir= 0, 1
@@ -319,11 +317,11 @@ bg1_x = -(bg_rect1.w - winWidth) // 2 # starting x offset of the second backgrou
 game_sprites = pygame.sprite.Group()
 mob_sprites = pygame.sprite.Group()
 # npcs
-npc_cap = 7;
+npc_cap = 4;
 '''npc_list = [["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
           [1, 1, 2, 2, 3, 3, 4, 4, 5],] # spawn weights
 '''
-npc_list = [["Chicago", "MrRat", "MrCat", "MsNymph", "MrShrimp", "Chad", "Kathy"], [1, 2, 2, 3, 3, 4, 4]]
+npc_list = [["Chicago", "MrRat", "MsNymph", "MrShrimp", "Chad", "Kathy"], [1, 2, 3, 3, 4, 4]]
 
 for spawn in random.choices(npc_list[0], weights = npc_list[1], k = npc_cap):
     createMob(spawn)
@@ -374,7 +372,7 @@ while running:
     else:
         player_dir = 0
     # player jump input
-    if key_state[pygame.K_s] and now - player.last_jump > 2 * delay:
+    if key_state[pygame.K_SPACE] and now - player.last_jump > 2 * delay:
         player.speed_y = -player_jump_strength
         player.last_jump = now
 # move first background layer
