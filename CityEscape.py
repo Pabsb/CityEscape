@@ -376,8 +376,8 @@ while running:
                 train_speed += train_acceleration
             if key_state[pygame.K_q]: # decelerate train
                 train_speed -= train_acceleration
-            if key_state[pygame.K_w] and train_speed==0: # change train direction (only works if the train is stopped)
-                #if previous_key_state is not None and previous_key_state[pygame.K_w]: # only executes one each time the key is pressed
+            if key_state[pygame.K_LSHIFT] and train_speed==0: # change train direction (only works if the train is stopped)
+                #if previous_key_state is not None and previous_key_state[pygame.K_LSHIFT]: # only executes one each time the key is pressed
                 train_dir*= -1
     # player walk input
     if key_state[pygame.K_d]:
