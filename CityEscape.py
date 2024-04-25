@@ -122,8 +122,8 @@ class Player(pygame.sprite.Sprite):
         self.speed_x = 0
         self.speed_y = 0
         # times of last player events
-        self.last_step=0
-        self.last_jump=0
+        self.last_step = 0
+        self.last_jump = 0
     # update per loop iteration
     def update(self):
         # gravity
@@ -154,23 +154,23 @@ class Player(pygame.sprite.Sprite):
             self.state = [3, 0]
         self.image = self.imgs[self.state[0]]
         # apply motion
-        self.hitbox.x-=walk_mode*player_dir*player_speed #self.speed_x
-        self.hitbox.y+=self.speed_y
-        if self.hitbox.right>winWidth:
-            self.hitbox.right=winWidth
-        if self.hitbox.left<0:
-            self.hitbox.left=0
-        if self.hitbox.bottom>floor: #winHeight:
-            self.hitbox.bottom=floor #winHeight
-            self.speed_y=0
-        if self.hitbox.top<0: # shouldn't be possible but just in case
-            self.hitbox.top=0
-        self.rect.center=self.hitbox.center
-        self.rect.centery-=self.offset
+        self.hitbox.x -= walk_mode * player_dir * player_speed #self.speed_x
+        self.hitbox.y += self.speed_y
+        if self.hitbox.right > winWidth:
+            self.hitbox.right = winWidth
+        if self.hitbox.left < 0:
+            self.hitbox.left = 0
+        if self.hitbox.bottom > floor: #winHeight:
+            self.hitbox.bottom = floor #winHeight
+            self.speed_y = 0
+        if self.hitbox.top < 0: # shouldn't be possible but just in case
+            self.hitbox.top = 0
+        self.rect.center = self.hitbox.center
+        self.rect.centery -= self.offset
 
 # create a generic enemy sprite for the game - standard name is *mob*
 class Mob(pygame.sprite.Sprite):
-    def __init__(self,tag):
+    def __init__(self, tag):
         pygame.sprite.Sprite.__init__(self)
         # set pristine original image for sprite object - random choice from list
         img = pygame.image.load(os.path.join(img_dir, '{}_still.png'.format(tag))).convert()
@@ -182,10 +182,10 @@ class Mob(pygame.sprite.Sprite):
             self.imgs.append(pygame.transform.scale_by(img, sprite_scl))
         for img in self.imgs:
             img.set_colorkey(WHITE)
-        self.tag=tag
-        self.state=[2]
-        self.image=self.imgs[self.state[0]]
-        self.rect=self.image.get_rect() # specify bounding rect for sprite
+        self.tag = tag
+        self.state = [2]
+        self.image = self.imgs[self.state[0]]
+        self.rect = self.image.get_rect() # specify bounding rect for sprite
         # set hitbox
         self.offset = 14
         r = self.rect
@@ -197,30 +197,30 @@ class Mob(pygame.sprite.Sprite):
         self.speed_y = 0 #random.randrange(1,7) # random speed along the y-axis
         self.walking = 0
         # times of last mob events
-        self.last_jump=0
-        self.last_step=0
+        self.last_jump = 0
+        self.last_step = 0
         # horazontal bounds
-        self.xbound_lower=-r.w
-        self.xbound_higher=winWidth+r.w
-    def move(self,dx,dy):
-        self.hitbox.x+=dx
-        self.hitbox.y+=dy
-        if self.hitbox.right>self.xbound_higher:
-            self.hitbox.right=self.xbound_higher
-            self.walking=0
-        if self.hitbox.left<self.xbound_lower:
-            self.hitbox.left=self.xbound_lower
-            self.walking=0
-        if self.hitbox.bottom>floor:
-            self.hitbox.bottom=floor
-            self.speed_y=0
-        if self.hitbox.top<0:  # shouldn't be possible but just in case
-            self.hitbox.top=0
-        self.rect.center=self.hitbox.center
-        self.rect.centery-=self.offset
-    def rebound(self,bg_x,bg_rect): #not the basketball kind :)
-        self.xbound_lower=bg_x
-        self.xbound_higher=bg_x+bg_rect.w
+        self.xbound_lower = -r.w
+        self.xbound_higher = winWidth + r.w
+    def move(self, dx, dy):
+        self.hitbox.x += dx
+        self.hitbox.y += dy
+        if self.hitbox.right > self.xbound_higher:
+            self.hitbox.right = self.xbound_higher
+            self.walking = 0
+        if self.hitbox.left < self.xbound_lower:
+            self.hitbox.left = self.xbound_lower
+            self.walking = 0
+        if self.hitbox.bottom > floor:
+            self.hitbox.bottom = floor
+            self.speed_y = 0
+        if self.hitbox.top < 0:  # shouldn't be possible but just in case
+            self.hitbox.top = 0
+        self.rect.center = self.hitbox.center
+        self.rect.centery -= self.offset
+    def rebound(self, bg_x, bg_rect): #not the basketball kind :)
+        self.xbound_lower = bg_x
+        self.xbound_higher = bg_x + bg_rect.w
     def update(self):
         # determine motion
         now = pygame.time.get_ticks()
@@ -255,7 +255,7 @@ class Mob(pygame.sprite.Sprite):
 
 # create a mob object
 def createMob(tag):
-    mob=Mob(tag)
+    mob = Mob(tag)
     game_sprites.add(mob)  # add to game_sprites group to get object updated
     mob_sprites.add(mob)  # add to mob_sprites group - use for collision detection &c.
 
@@ -319,11 +319,13 @@ bg1_x = -(bg_rect1.w - winWidth) // 2 # starting x offset of the second backgrou
 game_sprites = pygame.sprite.Group()
 mob_sprites = pygame.sprite.Group()
 # npcs
-npc_cap=7;
-npc_list=[["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
-          [1,1,2,2,3,3,4,4,5], # spawn weights
-         ]
-for spawn in random.choices(npc_list[0], weights=npc_list[1], k=npc_cap):
+npc_cap = 7;
+'''npc_list = [["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
+          [1, 1, 2, 2, 3, 3, 4, 4, 5],] # spawn weights
+'''
+npc_list = [["Chicago", "MrRat", "MrCat", "MsNymph", "MrShrimp", "Chad", "Kathy"], [1, 2, 2, 3, 3, 4, 4]]
+
+for spawn in random.choices(npc_list[0], weights = npc_list[1], k = npc_cap):
     createMob(spawn)
 # player
 player = Player() # create player object
@@ -363,18 +365,18 @@ while running:
                 train_speed -= train_acceleration
             if key_state[pygame.K_w] and train_speed==0: # change train direction (only works if the train is stopped)
                 #if previous_key_state is not None and previous_key_state[pygame.K_w]: # only executes one each time the key is pressed
-                train_dir*=-1
+                train_dir*= -1
     # player walk input
     if key_state[pygame.K_d]:
-        player_dir =- 1
+        player_dir = -1
     elif key_state[pygame.K_a]:
         player_dir = 1
     else:
-        player_dir=0
+        player_dir = 0
     # player jump input
-    if key_state[pygame.K_s] and now-player.last_jump>2*delay:
-        player.speed_y=-player_jump_strength
-        player.last_jump=now
+    if key_state[pygame.K_s] and now - player.last_jump > 2 * delay:
+        player.speed_y = -player_jump_strength
+        player.last_jump = now
 # move first background layer
     # confine train speed between zero an the speed limit
     if train_speed < 0: # confines train to a non-negative speed
@@ -400,19 +402,19 @@ while running:
             player_speed_x = 0
             bg1_x += player_dir * player_speed
             # prevent the train far from going to far
-            if bg1_x>0:
-                bg1_x=0
-                walk_mode=1
-            if winWidth-bg_rect1.w>bg1_x:
-                bg1_x=winWidth-bg_rect1.w
-                walk_mode=1
+            if bg1_x > 0:
+                bg1_x = 0
+                walk_mode = 1
+            if winWidth-bg_rect1.w > bg1_x:
+                bg1_x = winWidth - bg_rect1.w
+                walk_mode = 1
             # reflect relative motion of the mobs (so they appear stationary)
-            mob_list=pygame.sprite.Group.sprites(mob_sprites)
+            mob_list = pygame.sprite.Group.sprites(mob_sprites)
             for mob in mob_list:
-                mob.rebound(bg1_x,bg_rect1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
-                mob.move(player_dir*player_speed,0) # move the mob they stay stationary relative to the train
-        if walk_mode==1:
-            player_speed_x=player_dir*player_speed
+                mob.rebound(bg1_x, bg_rect1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
+                mob.move(player_dir * player_speed, 0) # move the mob they stay stationary relative to the train
+        if walk_mode == 1:
+            player_speed_x = player_dir * player_speed
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
@@ -425,11 +427,11 @@ while running:
 # draw text
     winX = window.get_width() / 2
     winY = window.get_height() - 50
-    textRender(window,str(test_text),32,BLACK,winX-2,winY+2)
-    textRender(window,str(test_text),32,BLACK,winX-2,winY-2)
-    textRender(window,str(test_text),32,BLACK,winX+2,winY+2)
-    textRender(window,str(test_text),32,BLACK,winX+2,winY-2)
-    textRender(window,str(test_text),32,WHITE,winX,winY)
+    textRender(window, str(test_text), 32, BLACK, winX - 2, winY + 2)
+    textRender(window, str(test_text), 32, BLACK, winX - 2, winY - 2)
+    textRender(window, str(test_text), 32, BLACK, winX + 2, winY + 2)
+    textRender(window, str(test_text), 32, BLACK, winX + 2, winY - 2)
+    textRender(window, str(test_text), 32, WHITE, winX, winY)
 
     drawStatusBar(window, 10, 10, playerHealth)
 # reflecting changes in the game window
