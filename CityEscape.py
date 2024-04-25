@@ -1,5 +1,7 @@
 import pygame, random, sys, os
 import pygame.event as EVENTS
+#sound import
+from pygame import mixer
 # import numpy for math stuff
 import numpy as np
 
@@ -104,7 +106,7 @@ class Player(pygame.sprite.Sprite):
         img = pygame.image.load(os.path.join(img_dir, 'DP_still.png')).convert()
         self.imgs = [pygame.transform.scale_by(img, sprite_scl)]
         for i in range(3):
-            img = pygame.image.load(os.path.join(img_dir,'DP_walk_left{}.png'.format(i))).convert()
+            img = pygame.image.load(os.path.join(img_dir, 'DP_walk_left{}.png'.format(i))).convert()
             self.imgs.insert(0, pygame.transform.scale_by(img, sprite_scl))
             img = pygame.image.load(os.path.join(img_dir, 'DP_walk_right{}.png'.format(i))).convert()
             self.imgs.append(pygame.transform.scale_by(img, sprite_scl))
@@ -124,8 +126,8 @@ class Player(pygame.sprite.Sprite):
         self.speed_x = 0
         self.speed_y = 0
         # times of last player events
-        self.last_step=0
-        self.last_jump=0
+        self.last_step = 0
+        self.last_jump = 0
     # update per loop iteration
     def update(self):
         # gravity
@@ -156,19 +158,19 @@ class Player(pygame.sprite.Sprite):
             self.state = [3, 0]
         self.image = self.imgs[self.state[0]]
         # apply motion
-        self.hitbox.x-=walk_mode*player_dir*player_speed #self.speed_x
-        self.hitbox.y+=self.speed_y
-        if self.hitbox.right>winWidth:
-            self.hitbox.right=winWidth
-        if self.hitbox.left<0:
-            self.hitbox.left=0
-        if self.hitbox.bottom>floor: #winHeight:
-            self.hitbox.bottom=floor #winHeight
-            self.speed_y=0
-        if self.hitbox.top<0: # shouldn't be possible but just in case
-            self.hitbox.top=0
-        self.rect.center=self.hitbox.center
-        self.rect.centery-=self.offset
+        self.hitbox.x -= walk_mode * player_dir * player_speed #self.speed_x
+        self.hitbox.y += self.speed_y
+        if self.hitbox.right > winWidth:
+            self.hitbox.right = winWidth
+        if self.hitbox.left < 0:
+            self.hitbox.left = 0
+        if self.hitbox.bottom > floor: #winHeight:
+            self.hitbox.bottom = floor #winHeight
+            self.speed_y = 0
+        if self.hitbox.top < 0: # shouldn't be possible but just in case
+            self.hitbox.top = 0
+        self.rect.center = self.hitbox.center
+        self.rect.centery -= self.offset
 
 # create a generic enemy sprite for the game - standard name is *mob*
 class Mob(pygame.sprite.Sprite):
@@ -200,8 +202,8 @@ class Mob(pygame.sprite.Sprite):
         self.speed_y = 0 #random.randrange(1,7) # random speed along the y-axis
         self.walking = 0
         # times of last mob events
-        self.last_jump=0
-        self.last_step=0
+        self.last_jump = 0
+        self.last_step = 0
         # horazontal bounds
         self.xbound_lower=-r.w
         self.xbound_higher=winWidth+r.w
@@ -320,7 +322,7 @@ def drawStatusBar(surface, x, y, health_pct):
 
 # load graphics/images for the game
 # background (2 layers)
-train_speed, train_dir= 0, 1
+train_speed, train_dir = 0, 1
 player_dir = 0
 walk_mode = 0
 # background layer 1
@@ -361,6 +363,15 @@ spawn_list=random.choices(range(len(npc_handle[0])), weights=npc_handle[1], k=np
 for spawn in spawn_list:
     #npc_handle[3,spawn]=npc_handle[3,spawn]+1
     createMob(npc_handle[0][spawn],npc_handle[2][spawn])
+    
+sounds_list = ["acid_rain.wav", "echoes_in_eternitye.wav"]
+#Adds sound
+mixer.init() 
+pygame.mixer.music.load(os.path.join(snd_dir, "acid_rain.wav"))
+mixer.music.set_volume(0.6)
+pygame.mixer.music.play(-1)
+ispaused = False
+
 # player
 player = Player() # create player object
 game_sprites.add(player) # add an npc to game
@@ -390,7 +401,7 @@ while running:
     # check keyboard events - keydown
     if any(key_state):
         # controls for the train moving animation
-        if now-last_input > delay:
+        if now - last_input > delay:
             last_input = pygame.time.get_ticks()
             if key_state[pygame.K_e]: # accelerate train
                 train_speed += train_acceleration
@@ -402,18 +413,17 @@ while running:
             if key_state[pygame.K_f] and train_speed==0: # exit the train; enter the station
                 you_are_here=1
                 bg1=platform
-                
     # player walk input
     if key_state[pygame.K_d]:
-        player_dir =- 1
+        player_dir = -1
     elif key_state[pygame.K_a]:
         player_dir = 1
     else:
-        player_dir=0
+        player_dir = 0
     # player jump input
-    if key_state[pygame.K_s] and now-player.last_jump>2*delay:
-        player.speed_y=-player_jump_strength
-        player.last_jump=now
+    if (key_state[pygame.K_SPACE] or key_state[pygame.K_w]) and now - player.last_jump > 2 * delay:
+        player.speed_y = -player_jump_strength
+        player.last_jump = now
 # move first background layer
     # confine train speed between zero an the speed limit
     if train_speed < 0: # confines train to a non-negative speed
@@ -446,12 +456,19 @@ while running:
                 bg1.x=winWidth-bg1.w
                 walk_mode=1
             # reflect relative motion of the mobs (so they appear stationary)
-            mob_list=pygame.sprite.Group.sprites(mob_sprites)
+            mob_list = pygame.sprite.Group.sprites(mob_sprites)
             for mob in mob_list:
                 mob.rebound(bg1)         # update the mob copy of the edges of the confining rect (only when the background layer moves)
                 mob.move(player_dir*player_speed,0) # move the mob they stay stationary relative to the train
         if walk_mode==1:
             player_speed_x=player_dir*player_speed
+    #Sound playback controls
+    if(key_state[pygame.K_p]) and ispaused is False:
+        mixer.music.pause()
+        ispaused = True
+    if(key_state[pygame.K_o]) and ispaused is True:
+        mixer.music.unpause()
+        ispaused = False
 # 'updating' the game
     # update all game sprites
     game_sprites.update()
@@ -463,11 +480,8 @@ while running:
     game_sprites.draw(window) # draw all sprites to the game window
 # draw text
     mob_list=pygame.sprite.Group.sprites(mob_sprites)
-    closest=mob_list[0]
-    how_close=player.rect.x-closest.rect.x
     for mob in mob_list:
-      textRender(window,closest.quote,32, WHITE,closest.hitbox.centerx,closest.hitbox.bottom+16)
-#draw the status bar
+      textRender(window, mob.quote,32, WHITE,mob.hitbox.centerx,mob.hitbox.bottom+16)
     drawStatusBar(window, 10, 10, playerHealth)
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
