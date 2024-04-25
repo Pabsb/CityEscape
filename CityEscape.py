@@ -403,7 +403,7 @@ while running:
             if bg1_x > 0:
                 bg1_x = 0
                 walk_mode = 1
-            if winWidth-bg_rect1.w > bg1_x:
+            if winWidth - bg_rect1.w > bg1_x:
                 bg1_x = winWidth - bg_rect1.w
                 walk_mode = 1
             # reflect relative motion of the mobs (so they appear stationary)
@@ -432,5 +432,7 @@ while running:
     textRender(window, str(test_text), 32, WHITE, winX, winY)
 
     drawStatusBar(window, 10, 10, playerHealth)
+
+    
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
