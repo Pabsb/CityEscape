@@ -102,7 +102,7 @@ class Player(pygame.sprite.Sprite):
         img = pygame.image.load(os.path.join(img_dir, 'DP_still.png')).convert()
         self.imgs = [pygame.transform.scale_by(img, sprite_scl)]
         for i in range(3):
-            img = pygame.image.load(os.path.join(img_dir,'DP_walk_left{}.png'.format(i))).convert()
+            img = pygame.image.load(os.path.join(img_dir, 'DP_walk_left{}.png'.format(i))).convert()
             self.imgs.insert(0, pygame.transform.scale_by(img, sprite_scl))
             img = pygame.image.load(os.path.join(img_dir, 'DP_walk_right{}.png'.format(i))).convert()
             self.imgs.append(pygame.transform.scale_by(img, sprite_scl))
@@ -202,6 +202,7 @@ class Mob(pygame.sprite.Sprite):
         # horazontal bounds
         self.xbound_lower = -r.w
         self.xbound_higher = winWidth + r.w
+
     def move(self, dx, dy):
         self.hitbox.x += dx
         self.hitbox.y += dy
@@ -218,9 +219,11 @@ class Mob(pygame.sprite.Sprite):
             self.hitbox.top = 0
         self.rect.center = self.hitbox.center
         self.rect.centery -= self.offset
+
     def rebound(self, bg_x, bg_rect): #not the basketball kind :)
         self.xbound_lower = bg_x
         self.xbound_higher = bg_x + bg_rect.w
+
     def update(self):
         # determine motion
         now = pygame.time.get_ticks()
@@ -292,7 +295,7 @@ def drawStatusBar(surface, x, y, health_pct):
 
 # load graphics/images for the game
 # background (2 layers)
-train_speed, train_dir= 0, 1
+train_speed, train_dir = 0, 1
 player_dir = 0
 walk_mode = 0
 # background layer 1
@@ -325,6 +328,9 @@ npc_list = [["Chicago", "MrRat", "MsNymph", "MrShrimp", "Chad", "Kathy"], [1, 2,
 
 for spawn in random.choices(npc_list[0], weights = npc_list[1], k = npc_cap):
     createMob(spawn)
+
+sounds_list = ["acid_rain.wav", "echoes_in_eternitye.wav"]
+
 # player
 player = Player() # create player object
 game_sprites.add(player) # add an npc to game
@@ -372,7 +378,7 @@ while running:
     else:
         player_dir = 0
     # player jump input
-    if (key_state[pygame.K_SPACE] or key_state[pygame.K_w] )and now - player.last_jump > 2 * delay:
+    if (key_state[pygame.K_SPACE] or key_state[pygame.K_w]) and now - player.last_jump > 2 * delay:
         player.speed_y = -player_jump_strength
         player.last_jump = now
 # move first background layer
@@ -433,6 +439,8 @@ while running:
 
     drawStatusBar(window, 10, 10, playerHealth)
 
-    
+    pygame.mixer.music.load(os.path.join(snd_dir, "acid_rain.wav"))
+    pygame.mixer.music.play(-1)
+
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
