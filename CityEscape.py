@@ -11,13 +11,14 @@ def to_do_list():
     - separate inputs for the different types of player movement                           fixed
     - train car goes a bit too far when the player walks all the way to the edge           attempted, likely a problem with the train image asset (try cropping)
     - re-add player's ability to jump (removed it at some point)                           fixed
+    - text wraping doesn't work                                                            not started
     potential optimizations/cleaning:
     - (medium/low priority) turn the background into a class (maybe?)                      not started, not going to worry about it yet
     - (medium/low priority) turn text boxes into a class (make it more general use)        not started, likely wont be hard
     additions:
     - (***MAXIMUM PRIORITY***)give the player a sanity meter                               Health Bar / Sanity Meter is added
-    - (high priority) add mob spawn mechanics                                              not started, likely wont be hard
-    - (high priority) dialog for characters                                                being writen, not implemented
+    - (high priority) add mob spawn mechanics                                              basic functionality, still need to control duplicate spawns
+    - (high priority) dialog for characters                                                added, doesnt wrap as intended 
     - (low priority) make the train multiple cars long                                     not started, not going to worry about it yet
       - (low priority) string several of the same train car image                          not started, not going to worry about it yet
       - (low priority) make a conductor car                                      
@@ -170,19 +171,20 @@ class Player(pygame.sprite.Sprite):
 
 # create a generic enemy sprite for the game - standard name is *mob*
 class Mob(pygame.sprite.Sprite):
-    def __init__(self,tag):
+    def __init__(self,name,quote):
         pygame.sprite.Sprite.__init__(self)
         # set pristine original image for sprite object - random choice from list
-        img = pygame.image.load(os.path.join(img_dir, '{}_still.png'.format(tag))).convert()
+        img = pygame.image.load(os.path.join(img_dir, '{}_still.png'.format(name))).convert()
         self.imgs = [pygame.transform.scale_by(img, sprite_scl)]
         for i in range(2):
-            img = pygame.image.load(os.path.join(img_dir, '{}_walk_left{}.png'.format(tag, i))).convert()
+            img = pygame.image.load(os.path.join(img_dir, '{}_walk_left{}.png'.format(name,i))).convert()
             self.imgs.insert(0, pygame.transform.scale_by(img, sprite_scl))
-            img = pygame.image.load(os.path.join(img_dir, '{}_walk_right{}.png'.format(tag, i))).convert()
+            img = pygame.image.load(os.path.join(img_dir, '{}_walk_right{}.png'.format(name,i))).convert()
             self.imgs.append(pygame.transform.scale_by(img, sprite_scl))
         for img in self.imgs:
             img.set_colorkey(WHITE)
-        self.tag=tag
+        self.tag=name
+        self.quote=quote
         self.state=[2]
         self.image=self.imgs[self.state[0]]
         self.rect=self.image.get_rect() # specify bounding rect for sprite
@@ -253,9 +255,19 @@ class Mob(pygame.sprite.Sprite):
         self.image = self.imgs[self.state[0]]
         self.move(self.speed_x, self.speed_y)
 
+class Background:
+    def __init__(self,name,color):
+        self.tag=name
+        self.img=pygame.image.load(os.path.join(img_dir, "{}.png".format(name))).convert()
+        scl=winHeight/self.img.get_rect().h
+        self.img=pygame.transform.scale_by(self.img,scl)
+        if color!=None:
+            self.img.set_colorkey(WHITE)
+        self.rect=self.img.get_rect()
+
 # create a mob object
-def createMob(tag):
-    mob=Mob(tag)
+def createMob(name,quote):
+    mob=Mob(name,quote)
     game_sprites.add(mob)  # add to game_sprites group to get object updated
     mob_sprites.add(mob)  # add to mob_sprites group - use for collision detection &c.
 
@@ -265,6 +277,17 @@ def gameExit():
     sys.exit()
 
 def textRender(surface, text, size, color, x, y):
+    # wraping (doesnt work)
+    maxStrLen = 24
+    if len(text) > maxStrLen:
+        i = maxStrLen
+        while i < len(text):
+            line = text.find(" ", i)
+            if line != -1:
+                text = text[:line] + "\n" + text[line + 1:]
+                i = i + line
+            else:
+                i=len(text)
     font = pygame.font.Font('freesansbold.ttf', size)
     text = font.render(text, True, color)
     textRect = text.get_rect()
@@ -292,6 +315,7 @@ def drawStatusBar(surface, x, y, health_pct):
 
 
 
+
 # load graphics/images for the game
 # background (2 layers)
 train_speed, train_dir= 0, 1
@@ -315,16 +339,30 @@ bg_rect1 = bg_img1.get_rect()
 # background layer 2 offsets
 bg1_x = -(bg_rect1.w - winWidth) // 2 # starting x offset of the second background layer
 
+
 # sprite groups - player and mob
 game_sprites = pygame.sprite.Group()
 mob_sprites = pygame.sprite.Group()
 # npcs
-npc_cap=7;
-npc_list=[["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
-          [1,1,2,2,3,3,4,4,5], # spawn weights
-         ]
-for spawn in random.choices(npc_list[0], weights=npc_list[1], k=npc_cap):
-    createMob(spawn)
+npc_cap=1;
+npc_handle=[["Chicago","Conductor","MrRat","MrCat","MsNymph","MrShrimp","Chad","Kathy","TrainCrazy"],
+           [1,1,2,2,3,3,4,4,5], # spawn weights
+           #[0,0,0,0,0,0,0,0,0],
+           ["Leaving? Oh, sweetheart, you're stuck with me like deep dish on a Chicagoan's cheat day!",
+            "Please keep all hands and feet inside the vehicle at all times",
+            "Shhhh, don't tell anyone you saw me.",
+            "Are you in need of an exterminator?",
+            "If you need anything, swim on by!",
+            "Please don't krill me! I have a family!",
+            "Did you see the Tardigrades' game last night?! Oh man, it was a real nail biter!",
+            "Brrrrrrring Brrrrrrrring! Wsui beiwu fnci pudb chsx  flhdb ciksj xhc vrk.",
+            "I'M A MOTHERFUGGIN SHADOW!!! THE COPS CAN'T KELL ME!!!"
+           ]
+          ]
+spawn_list=random.choices(range(len(npc_handle[0])), weights=npc_handle[1], k=npc_cap)
+for spawn in spawn_list:
+    #npc_handle[3,spawn]=npc_handle[3,spawn]+1
+    createMob(npc_handle[0][spawn],npc_handle[2][spawn])
 # player
 player = Player() # create player object
 game_sprites.add(player) # add an npc to game
@@ -344,7 +382,11 @@ while running:
         if event.type == pygame.QUIT:
             gameExit()
         if event.type == pygame.MOUSEBUTTONDOWN:
-            print(pygame.mouse.get_pos())
+            #print(pygame.mouse.get_pos())
+            mob_list = pygame.sprite.Group.sprites(mob_sprites)
+            for mob in mob_list:
+                mob.dist(player)
+            print("\n")
         if event.type == pygame.KEYDOWN:
             # check for ESCAPE key
             if event.key == pygame.K_ESCAPE:
@@ -423,6 +465,16 @@ while running:
     # drawing the game sprites
     game_sprites.draw(window) # draw all sprites to the game window
 # draw text
+    mob_list=pygame.sprite.Group.sprites(mob_sprites)
+    closest=mob_list[0]
+    how_close=player.rect.x-closest.rect.x
+    for mob in mob_list:
+        attempt=player.rect.x-mob.rect.x
+        if attempt<how_close:
+            closest=mob
+            how_close=attempt
+    textRender(window,closest.quote,32, WHITE,closest.hitbox.centerx,closest.hitbox.bottom+16)
+    '''
     winX = window.get_width() / 2
     winY = window.get_height() - 50
     textRender(window,str(test_text),32,BLACK,winX-2,winY+2)
@@ -430,7 +482,7 @@ while running:
     textRender(window,str(test_text),32,BLACK,winX+2,winY+2)
     textRender(window,str(test_text),32,BLACK,winX+2,winY-2)
     textRender(window,str(test_text),32,WHITE,winX,winY)
-
+    '''
     drawStatusBar(window, 10, 10, playerHealth)
 # reflecting changes in the game window
     pygame.display.update()  # update the display window...
